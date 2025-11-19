@@ -128,6 +128,8 @@ alias lt='eza --tree --level=2 --long --icons --git'
 alias lta='lt -a'
 alias ff="fzf --preview 'bat --style=numbers --color=always {}'"
 
+alias n="nvim"
+
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#f4ddc4,bold,underline"
 
 
