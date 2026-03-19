@@ -1,12 +1,27 @@
 vim.g.mapleader = " "
+
+do
+	local dotnet9 = vim.fn.expand("$HOME/.dotnet9")
+	if
+		vim.fn.isdirectory(dotnet9) == 1 and not vim.env.PATH:find(dotnet9, 1, true) -- avoid duplicates
+	then
+		vim.env.PATH = dotnet9 .. ":" .. vim.env.PATH
+	end
+end
+
 vim.opt.termguicolors = true
 vim.api.nvim_set_hl(0, "Normal", { bg = "NONE" })
 vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
 vim.api.nvim_set_hl(0, "SignColumn", { bg = "NONE" })
 vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "NONE" })
 
+vim.opt.spell = true
+vim.opt.spelllang = "en_us"
+
 vim.wo.number = true
 vim.wo.relativenumber = true
+
+vim.opt.textwidth = 72
 
 vim.wo.signcolumn = "number"
 
@@ -244,11 +259,26 @@ vim.lsp.config("lua_ls", {
 })
 vim.lsp.enable("lua_ls")
 
+vim.lsp.config("clangd", { capabilities = capabilities })
+vim.lsp.enable("clangd")
+
+vim.lsp.config("cmake", { capabilities = capabilities })
+vim.lsp.enable("cmake")
+
 vim.lsp.config("csharp_ls", { capabilities = capabilities })
 vim.lsp.enable("csharp_ls")
 
+vim.lsp.config("cspell_ls", { capabilities = capabilities })
+vim.lsp.enable("cspell_ls")
+
+vim.lsp.config("cspell", { capabilities = capabilities })
+vim.lsp.enable("cspell")
+
 vim.lsp.config("ruby_lsp", { capabilities = capabilities })
 vim.lsp.enable("ruby_lsp")
+
+vim.lsp.config("rust_analyzer", { capabilities = capabilities })
+vim.lsp.enable("rust_analyzer")
 
 vim.lsp.config("docker_compose_language_service", { capabilities = capabilities })
 vim.lsp.enable("docker_compose_language_service")
@@ -451,7 +481,7 @@ vim.api.nvim_set_hl(0, "NotifyTRACEBody", { link = "Normal" })
 
 vim.keymap.set("n", "<leader>N?", ":Notifications<CR>", {})
 
-vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
+vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 vim.keymap.set("n", "<leader>Y", [["+Y]])
-vim.keymap.set({"n", "v"}, "<leader>p", [["+p]])
-vim.keymap.set({"n", "v"}, "<leader>P", [["+P]])
+vim.keymap.set({ "n", "v" }, "<leader>p", [["+p]])
+vim.keymap.set({ "n", "v" }, "<leader>P", [["+P]])
