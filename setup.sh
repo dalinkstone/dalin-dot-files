@@ -150,6 +150,46 @@ install_tpm() {
   ok "tmux plugin manager ready"
 }
 
+# ---------- powerlevel10k fonts ----------------------------------------------
+
+# p10k's README points users at four specific TTFs hosted in
+# romkatv/powerlevel10k-media. They register as "MesloLGS NF" in the macOS
+# font picker, which is the exact name p10k's setup wizard tells you to pick.
+# The Homebrew cask `font-meslo-lg-nerd-font` is the same patched glyph set
+# but installs ~70 variant files under different names ("MesloLGS Nerd Font"),
+# so we fetch the curated four directly to match p10k's docs.
+install_p10k_fonts() {
+  local font_dir="$HOME/Library/Fonts"
+  local base="https://github.com/romkatv/powerlevel10k-media/raw/master"
+  local fonts=(
+    "MesloLGS NF Regular.ttf"
+    "MesloLGS NF Bold.ttf"
+    "MesloLGS NF Italic.ttf"
+    "MesloLGS NF Bold Italic.ttf"
+  )
+  ensure_dir "$font_dir"
+  local installed=0
+  for f in "${fonts[@]}"; do
+    if [[ -f "$font_dir/$f" ]]; then
+      continue
+    fi
+    log "downloading $f"
+    # GitHub's raw URL needs the spaces percent-encoded.
+    local encoded="${f// /%20}"
+    if curl -fsSL "$base/$encoded" -o "$font_dir/$f"; then
+      installed=$((installed + 1))
+    else
+      warn "failed to download $f"
+      rm -f "$font_dir/$f"
+    fi
+  done
+  if (( installed > 0 )); then
+    ok "installed $installed MesloLGS NF font(s); restart Terminal.app to see them in the font picker"
+  else
+    ok "MesloLGS NF fonts already present"
+  fi
+}
+
 # ---------- dotfile symlinks --------------------------------------------------
 
 link_dotfiles() {
@@ -470,6 +510,7 @@ main() {
   install_oh_my_zsh
   install_zsh_extras
   install_tpm
+  install_p10k_fonts
   link_dotfiles
   import_terminal_theme
   install_node_via_nvm
