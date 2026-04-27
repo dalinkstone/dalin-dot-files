@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Editor / IDE caches
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Neovim runtime caches dropped into the config dir
+.config/nvim/.ruby-lsp/
+.config/nvim/spell/
+.config/nvim/plugin/packer_compiled.lua
+
+# Raycast extensions are per-machine runtime artifacts; do not track
+.config/raycast/extensions/
+
+# Local install state written by install.sh
+.install_state/
+*.local

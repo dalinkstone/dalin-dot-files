@@ -30,3 +30,26 @@ cask "hiddenbar"
 cask "rectangle"
 cask "stats"
 cask "zoom"
+
+# --- Added by install.sh refresh ---
+
+# Taps for third-party CLIs
+tap "oven-sh/bun"
+tap "sst/tap"
+
+# CLIs
+brew "gh"
+brew "mas"
+brew "node"
+brew "oven-sh/bun/bun"
+brew "sst/tap/opencode"
+
+# Desktop apps
+cask "1password"
+cask "1password-cli"
+cask "notion"
+cask "obsidian"
+cask "raycast"
+cask "slack"
+cask "spotify"
+cask "tailscale"
