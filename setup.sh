@@ -167,13 +167,61 @@ link_dotfiles() {
 
 # ---------- Terminal.app theme -----------------------------------------------
 
+# A Terminal.app .terminal file embeds the background image as a Foundation
+# bookmark — an absolute alias that hardcodes the file path AND the volume
+# UUID, so the bookmark stored in the repo is only valid on the machine that
+# generated it. Regenerate one for the current machine before importing.
+generate_bookmark_b64() {
+  local target="$1"
+  swift - "$target" <<'SWIFT'
+import Foundation
+let path = CommandLine.arguments[1]
+let url = URL(fileURLWithPath: path)
+do {
+  let bookmark = try url.bookmarkData()
+  let archive = try NSKeyedArchiver.archivedData(withRootObject: bookmark, requiringSecureCoding: false)
+  print(archive.base64EncodedString())
+} catch {
+  FileHandle.standardError.write("error: \(error)\n".data(using: .utf8)!)
+  exit(1)
+}
+SWIFT
+}
+
 import_terminal_theme() {
   local theme="$DOTFILES_DIR/DarkTyrael.terminal"
-  if [[ -f "$theme" ]]; then
-    log "importing Terminal.app theme (DarkTyrael)"
-    open "$theme"
-    ok "theme imported — set as default in Terminal → Settings if desired"
+  local wallpaper="$DOTFILES_DIR/tyrael.png"
+
+  [[ -f "$theme" ]] || { warn "DarkTyrael.terminal not found; skipping theme import"; return 0; }
+
+  # Terminal.app keys imported profiles by the .terminal file's basename,
+  # not by the `name` field inside the plist — so the staged copy must be
+  # called DarkTyrael.terminal exactly, otherwise we end up with sibling
+  # profiles (DarkTyrael.A1B2C3, etc.) every time the script runs. Stage
+  # it inside a unique temp directory to keep that filename stable.
+  local staged_dir staged
+  staged_dir="$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-terminal.XXXXXX")"
+  staged="$staged_dir/DarkTyrael.terminal"
+  cp "$theme" "$staged"
+
+  if [[ ! -f "$wallpaper" ]]; then
+    warn "wallpaper $wallpaper not found; theme will import without background image"
+  elif ! has swift; then
+    warn "swift not on PATH (Xcode CLT?); theme will import without refreshed bookmark"
+  else
+    log "regenerating BackgroundImageBookmark for $wallpaper"
+    local b64
+    if b64=$(generate_bookmark_b64 "$wallpaper"); then
+      plutil -replace BackgroundImageBookmark -data "$b64" "$staged"
+      ok "bookmark refreshed"
+    else
+      warn "bookmark generation failed; theme will import with stale bookmark"
+    fi
   fi
+
+  log "importing Terminal.app theme (DarkTyrael)"
+  open "$staged"
+  ok "theme imported — set DarkTyrael as default in Terminal → Settings if desired"
 }
 
 # ---------- language toolchains ----------------------------------------------
@@ -220,6 +268,27 @@ install_rvm() {
     ok "RVM already installed"
     return 0
   fi
+
+  # The RVM installer verifies its tarball against two GPG signatures and
+  # aborts if neither key is in the local keyring. pool.sks-keyservers.net
+  # was sunset in 2021, so prefer the official .asc files served by rvm.io
+  # and fall back to keyserver.ubuntu.com.
+  if has gpg; then
+    log "importing RVM signing keys (mpapis + pkuczynski)"
+    if curl -fsSL https://rvm.io/mpapis.asc | gpg --import - 2>/dev/null \
+        && curl -fsSL https://rvm.io/pkuczynski.asc | gpg --import - 2>/dev/null; then
+      ok "RVM signing keys imported from rvm.io"
+    else
+      warn "rvm.io key fetch failed; trying hkp://keyserver.ubuntu.com"
+      gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys \
+        409B6B1796C275462A1703113804BB82D39DC0E3 \
+        7D2BAF1CF37B13E2069D6956105BD0E739499BDB \
+        || warn "keyserver fallback also failed; RVM install may abort at signature check"
+    fi
+  else
+    warn "gpg not on PATH; RVM install will likely fail signature verification"
+  fi
+
   log "installing RVM (Ruby Version Manager)"
   curl -sSL https://get.rvm.io | bash -s stable
 }

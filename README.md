@@ -32,7 +32,11 @@ Driven by [`setup.sh`](setup.sh) and [`Brewfile`](Brewfile):
   `pyenv`, Ruby via `rvm`
 - Symlinks: `.zshrc`, `.zprofile`, `.zlogin`, `.tmux.conf`, `.p10k.zsh`,
   `~/.config/nvim`, `~/.config/raycast`
-- Terminal.app theme (`DarkTyrael.terminal`) imported on first run
+- Terminal.app theme (`DarkTyrael.terminal`) imported on first run, with
+  `tyrael.png` (bundled in the repo) wired up as the background image — the
+  bookmark is regenerated at install time so it resolves on whatever machine
+  is running the script (Terminal's bookmarks hardcode the volume UUID, so
+  the one stored in the .terminal file can't be reused across machines)
 - Default shell switched to `/bin/zsh` via `chsh`
 - macOS system settings: Dock (right side, auto-hide, no recents), menu-bar
   clock (time only, 24-hour), Finder (list view, path/status bar, hidden
